@@ -1,0 +1,6 @@
+{
+  "name": "JOBGRAPH - Graph-Based Job Skill Matching & Skill Gap Analysis",
+  "description": "Graph-Based Job Skill Matching & Skill Gap Analysis System using Neo4j graph relationships for academic project presentation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

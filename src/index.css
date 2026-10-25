@@ -1,0 +1,227 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  
+  code, pre, kbd, samp {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+
+  /* Universal high-contrast focus rings for keyboard navigation accessibility */
+  :focus-visible {
+    outline: 2px solid #2563EB;
+    outline-offset: 2px;
+  }
+
+  /* High contrast skip links or interactive controls */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid #2563EB;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+  }
+}
+
+/* ==========================================================================
+   JOBGRAPH CONSISTENT MOTION SYSTEM
+   Refined, purposeful, non-distracting motion with prefers-reduced-motion support
+   ========================================================================== */
+
+@keyframes pageEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cardStagger {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes chipEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes modalFadeScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes drawerSlideRight {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes toastSlideFade {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes drawDash {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes nodePop {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes shimmerWave {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Reusable animation utilities */
+.animate-page-entrance {
+  animation: pageEntrance 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-card-entrance {
+  animation: cardStagger 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-chip-entrance {
+  animation: chipEntrance 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-modal-entrance {
+  animation: modalFadeScale 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-drawer-right {
+  animation: drawerSlideRight 250ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-toast-in {
+  animation: toastSlideFade 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-node-pop {
+  animation: nodePop 300ms ease-out both;
+}
+
+.animate-line-draw {
+  animation: drawDash 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(226, 232, 240, 0.8) 0%,
+    rgba(241, 245, 249, 1) 50%,
+    rgba(226, 232, 240, 0.8) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmerWave 1.6s infinite ease-in-out;
+}
+
+/* Stagger delay classes for lists & cards */
+.stagger-1 { animation-delay: 40ms; }
+.stagger-2 { animation-delay: 80ms; }
+.stagger-3 { animation-delay: 120ms; }
+.stagger-4 { animation-delay: 160ms; }
+.stagger-5 { animation-delay: 200ms; }
+.stagger-6 { animation-delay: 240ms; }
+.stagger-7 { animation-delay: 280ms; }
+.stagger-8 { animation-delay: 320ms; }
+
+/* Subtle elevation and button transforms */
+.hover-card-elevation {
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.hover-card-elevation:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+}
+
+.hover-button-subtle {
+  transition: transform 120ms ease, background-color 120ms ease, opacity 120ms ease;
+}
+
+.hover-button-subtle:active {
+  transform: scale(0.98);
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-page-entrance,
+  .animate-card-entrance,
+  .animate-chip-entrance,
+  .animate-modal-entrance,
+  .animate-drawer-right,
+  .animate-toast-in,
+  .animate-node-pop,
+  .animate-line-draw,
+  .skeleton-shimmer {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .hover-card-elevation:hover {
+    transform: none !important;
+  }
+
+  .hover-button-subtle:active {
+    transform: none !important;
+  }
+}
+

@@ -1,0 +1,170 @@
+[
+  {
+    "id": "skill-java",
+    "name": "Java",
+    "category": "Languages",
+    "description": "Object-oriented programming, JVM ecosystem, multithreading, and enterprise backend engineering.",
+    "marketDemand": "Very High",
+    "neo4jColor": "#E11D48"
+  },
+  {
+    "id": "skill-js",
+    "name": "JavaScript (ES6+)",
+    "category": "Languages",
+    "description": "Modern asynchronous JavaScript, closures, event loop, and DOM manipulation.",
+    "marketDemand": "Very High",
+    "neo4jColor": "#F59E0B"
+  },
+  {
+    "id": "skill-ts",
+    "name": "TypeScript",
+    "category": "Languages",
+    "description": "Typed superset of JavaScript providing static typing, generics, and interfaces.",
+    "marketDemand": "Very High",
+    "neo4jColor": "#3B82F6"
+  },
+  {
+    "id": "skill-py",
+    "name": "Python",
+    "category": "Languages",
+    "description": "High-level interpreted language used for automation, scripting, and backend APIs.",
+    "marketDemand": "Very High",
+    "neo4jColor": "#10B981"
+  },
+  {
+    "id": "skill-sql",
+    "name": "SQL",
+    "category": "Database",
+    "description": "Structured Query Language for querying and managing relational DBMS tables.",
+    "marketDemand": "High",
+    "neo4jColor": "#6366F1"
+  },
+  {
+    "id": "skill-react",
+    "name": "React",
+    "category": "Frontend",
+    "description": "Declarative component-driven frontend library with hooks, context, and virtual DOM.",
+    "marketDemand": "Very High",
+    "neo4jColor": "#06B6D4"
+  },
+  {
+    "id": "skill-html-css",
+    "name": "HTML5 & CSS3",
+    "category": "Frontend",
+    "description": "Semantic document structure, CSS flexbox, grid, and responsive styling principles.",
+    "marketDemand": "High",
+    "neo4jColor": "#EC4899"
+  },
+  {
+    "id": "skill-tailwind",
+    "name": "Tailwind CSS",
+    "category": "Frontend",
+    "description": "Utility-first CSS framework for rapid and maintainable user interface composition.",
+    "marketDemand": "High",
+    "neo4jColor": "#0EA5E9"
+  },
+  {
+    "id": "skill-node",
+    "name": "Node.js",
+    "category": "Backend",
+    "description": "Event-driven, non-blocking asynchronous JavaScript server-side runtime.",
+    "marketDemand": "Very High",
+    "neo4jColor": "#22C55E"
+  },
+  {
+    "id": "skill-express",
+    "name": "Express.js",
+    "category": "Backend",
+    "description": "Minimalist web framework for Node.js handling REST API routes and middlewares.",
+    "marketDemand": "Very High",
+    "neo4jColor": "#64748B"
+  },
+  {
+    "id": "skill-rest",
+    "name": "RESTful API Design",
+    "category": "Backend",
+    "description": "Stateless HTTP API architecture, JSON payload formatting, status codes, and security.",
+    "marketDemand": "High",
+    "neo4jColor": "#8B5CF6"
+  },
+  {
+    "id": "skill-neo4j",
+    "name": "Neo4j & Cypher",
+    "category": "Database",
+    "description": "Native graph database engine and Cypher declarative graph query language for interconnected data.",
+    "marketDemand": "High",
+    "neo4jColor": "#0284C7"
+  },
+  {
+    "id": "skill-mongo",
+    "name": "MongoDB",
+    "category": "Database",
+    "description": "Document-oriented NoSQL database storing flexible BSON schemas.",
+    "marketDemand": "High",
+    "neo4jColor": "#16A34A"
+  },
+  {
+    "id": "skill-postgres",
+    "name": "PostgreSQL",
+    "category": "Database",
+    "description": "Advanced open-source relational database with ACID compliance and JSONB support.",
+    "marketDemand": "High",
+    "neo4jColor": "#2563EB"
+  },
+  {
+    "id": "skill-redis",
+    "name": "Redis",
+    "category": "Database",
+    "description": "In-memory key-value data structure store used as a fast cache and message broker.",
+    "marketDemand": "High",
+    "neo4jColor": "#EF4444"
+  },
+  {
+    "id": "skill-docker",
+    "name": "Docker",
+    "category": "Cloud & DevOps",
+    "description": "Containerization technology for packaging applications with isolated OS-level dependencies.",
+    "marketDemand": "Very High",
+    "neo4jColor": "#0284C7"
+  },
+  {
+    "id": "skill-aws",
+    "name": "AWS",
+    "category": "Cloud & DevOps",
+    "description": "Amazon Web Services cloud architecture, EC2, S3, IAM, Lambda, and serverless compute.",
+    "marketDemand": "Very High",
+    "neo4jColor": "#F59E0B"
+  },
+  {
+    "id": "skill-k8s",
+    "name": "Kubernetes",
+    "category": "Cloud & DevOps",
+    "description": "Container orchestration platform automating deployment, scaling, and operations of application containers.",
+    "marketDemand": "High",
+    "neo4jColor": "#3B82F6"
+  },
+  {
+    "id": "skill-git",
+    "name": "Git",
+    "category": "Cloud & DevOps",
+    "description": "Distributed version control system, branching strategies, and collaborative code reviews.",
+    "marketDemand": "High",
+    "neo4jColor": "#F97316"
+  },
+  {
+    "id": "skill-linux",
+    "name": "Linux Command Line",
+    "category": "Cloud & DevOps",
+    "description": "Shell scripting, file permissions, daemon process management, and SSH administration.",
+    "marketDemand": "High",
+    "neo4jColor": "#F59E0B"
+  },
+  {
+    "id": "skill-dsa",
+    "name": "Data Structures & Algorithms",
+    "category": "Core CS & Tools",
+    "description": "Graph traversals (BFS/DFS), trees, hash maps, Big-O algorithmic time complexity.",
+    "marketDemand": "High",
+    "neo4jColor": "#8B5CF6"
+  }
+]
