@@ -14,7 +14,7 @@ export default defineConfig(() => {
     server: {
       proxy: {
         '/api': {
-          target: process.env.API_PROXY_TARGET,
+          target: process.env.API_PROXY_TARGET || 'https://jobgraph-s222.onrender.com',
           changeOrigin: true,
         },
       },
