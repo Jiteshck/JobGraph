@@ -1,102 +1,398 @@
-## Run Locally
-1. `npm install -D esbuild@^0.28.`
-2. Install dependencies:
-   `npm install`
-3. Run the app:
-   `npm run dev`
+# Job Skill Matcher (JobGraph)
 
-## Backend + Neo4j Aura setup
+Job Skill Matcher is a graph-database-powered web application that helps students understand how their skills align with job requirements. It stores users, student profiles, skills, jobs, companies, and their relationships in **Neo4j AuraDB**. Students can maintain their profiles and skills, browse jobs, and review skill-based job matches. Administrators manage the job/company data and inspect student and skill information.
 
-The backend now uses Neo4j as its persistent store; it does not fall back to an in-memory user database.
+> **Security note:** Never commit your real `.env` file, database password, JWT secret, administrator password, or Google OAuth secrets to GitHub.
 
-### 1. Configure Neo4j Aura
+## Contents
 
-1. Create/open a Neo4j AuraDB instance.
-2. In Aura, copy the connection URI and database username, and retrieve the database password you set when creating the instance.
-3. Copy `.env.example` to `.env` and set `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD`, `NEO4J_DATABASE`, and a long random `SECRET_KEY`.
-4. Set `ADMIN_EMAILS` to the exact email address(es) that should be granted administrator access. Public signup always creates student accounts.
+- [Features and dashboards](#features-and-dashboards)
+- [Technology stack](#technology-stack)
+- [Prerequisites](#prerequisites)
+- [First-time setup](#first-time-setup)
+  - [1. Get Neo4j Aura ready](#1-get-neo4j-aura-ready)
+  - [2. Configure the backend environment](#2-configure-the-backend-environment)
+  - [3. Create and activate a Python virtual environment](#3-create-and-activate-a-python-virtual-environment)
+  - [4. Install frontend dependencies](#4-install-frontend-dependencies)
+  - [5. Create the administrator account](#5-create-the-administrator-account)
+  - [6. Start the application](#6-start-the-application)
+  - [7. Verify the database connection](#7-verify-the-database-connection)
+- [How administrator access works](#how-administrator-access-works)
+- [Neo4j graph model](#neo4j-graph-model)
+- [Environment variable reference](#environment-variable-reference)
+- [Deployment notes](#deployment-notes)
+- [Troubleshooting](#troubleshooting)
 
-Never commit or share `.env`. If credentials were previously included in a shared archive, rotate them.
+## Features and dashboards
 
-### 2. Install and start the Python API
+### Student dashboard
 
-From the project root, in a virtual environment:
+- View and update the student's own profile.
+- Add skills and specify proficiency levels.
+- Browse published jobs and their required skills.
+- View job-match results, match percentages, and skills that may need improvement where available.
+- Review the relationship between a student's skills and job requirements.
+
+Each public signup creates a student account. Users cannot register themselves as administrators.
+
+### Administrator dashboard
+
+- View dashboard statistics.
+- Manage jobs and companies.
+- Manage skills where supported by the admin interface.
+- View student records and student-skill information.
+- Review job-skill relationships.
+
+Administrator API routes require a valid access token and a user whose role is `admin`.
+
+### Graph data
+
+The application stores graph entities and relationships in Neo4j AuraDB. The graph can be inspected using Neo4j Aura's Query interface or explored in Bloom. Bloom is a separate visualization workspace: nodes that exist in the database may not automatically appear in the currently open Bloom scene.
+
+## Technology stack
+
+- **Frontend:** React, TypeScript, Vite
+- **Backend:** Python, FastAPI, Uvicorn
+- **Graph database:** Neo4j AuraDB
+- **Authentication:** Password-based login, signed JWT access tokens
+- **Graph queries:** Cypher
+
+Google sign-in should only be enabled after server-side Google ID-token verification has been implemented and configured. Do not treat a typed email address as proof of Google identity.
+
+## Prerequisites
+
+Install the following before setup:
+
+- Git
+- Node.js and npm
+- Python 3.10 or a compatible version supported by the project's dependencies
+- A Neo4j AuraDB instance
+
+Run all commands from the repository root unless a step says otherwise. On Windows, use PowerShell for the commands below.
+
+## First-time setup
+
+### 1. Get Neo4j Aura ready
+
+1. Open [Neo4j Aura Console](https://console.neo4j.io/) and create a Neo4j AuraDB instance, or open your existing instance.
+2. Wait until the instance is running.
+3. Open the instance's **Connect** details and copy its connection URI. It will look similar to:
+   `neo4j+s://YOUR_INSTANCE.databases.neo4j.io`
+4. Note the database username, normally `neo4j`, and the password created for that Aura instance.
+5. Note the database name shown by Aura. Use the actual database name in `.env`; do not assume it is the same as the Aura instance ID.
+
+Keep the Aura URI, username, and password private. If a credential has been exposed, rotate it in Aura before continuing.
+
+### 2. Configure the backend environment
+
+Create a local `.env` file by copying `.env.example`.
+
+**Windows PowerShell:**
+
+```powershell
+Copy-Item .env.example .env
+```
+
+**macOS/Linux:**
+
+```bash
+cp .env.example .env
+```
+
+Open `.env` and replace the placeholder values. For example:
+
+```dotenv
+PORT=8000
+HOST=127.0.0.1
+ENVIRONMENT=development
+
+NEO4J_URI=neo4j+s://YOUR_INSTANCE.databases.neo4j.io
+NEO4J_USERNAME=neo4j
+NEO4J_PASSWORD=YOUR_REAL_AURA_PASSWORD
+NEO4J_DATABASE=neo4j
+
+SECRET_KEY=REPLACE_WITH_A_LONG_RANDOM_SECRET
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=1440
+
+ADMIN_EMAILS=admin@example.com
+
+CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173
+```
+
+Important:
+
+- Use the real Aura values for `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD`, and `NEO4J_DATABASE`.
+- Replace `SECRET_KEY` with a long, random secret. Do not use the example value in production.
+- Set `ADMIN_EMAILS` to the exact email address that should have administrator access. Multiple addresses can be separated by commas.
+- Keep `.env` local and make sure it is ignored by Git.
+- Do not add quotes around values unless your environment loader requires them.
+
+To generate a random secret with Python, run:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+```
+
+Copy the generated value into `SECRET_KEY`.
+
+### 3. Create and activate a Python virtual environment
+
+From the project root:
 
 ```bash
 python -m venv .venv
-# Windows PowerShell: .venv\\Scripts\\Activate.ps1
-# macOS/Linux: source .venv/bin/activate
-python -m pip install -r requirements.txt
-python server.py
 ```
 
-The API listens on `http://127.0.0.1:8000` by default. Startup verifies Aura connectivity and creates the required uniqueness constraints. If the URI, password, or network connection is wrong, startup fails rather than silently switching to demo data.
+**Windows PowerShell:**
 
-### 3. Start the existing frontend
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
 
-In a second terminal:
+If PowerShell blocks script activation, use Command Prompt instead:
+
+```bat
+.venv\Scripts\activate.bat
+```
+
+**macOS/Linux:**
+
+```bash
+source .venv/bin/activate
+```
+
+Install the backend dependencies:
+
+```bash
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+### 4. Install frontend dependencies
+
+Open a second terminal in the project root. Install the JavaScript dependencies:
 
 ```bash
 npm install
+```
+
+If your repository's `package.json` or build error specifically requires the esbuild version used by this project, follow the repository's dependency instructions. Normally, `npm install` should be the first step rather than installing extra packages blindly.
+
+### 5. Create the administrator account
+
+Administrator access is controlled by the `ADMIN_EMAILS` allowlist and a separately created account. Adding an email to `ADMIN_EMAILS` alone does **not** create the account or set its password.
+
+1. In `.env`, set the exact administrator email. For example:
+
+   ```dotenv
+   ADMIN_EMAILS=admin@example.com
+   ```
+
+2. Make sure the email you intend to use is exactly the same as the allowlisted email.
+3. With the Python virtual environment activated and dependencies installed, run:
+
+   ```bash
+   python scripts/create_admin.py
+   ```
+
+4. Follow the script's prompts to enter the administrator email and set its password. The script should refuse emails that are not in `ADMIN_EMAILS`.
+5. Use that email and password on the login page, then open the administrator dashboard.
+
+Choose a strong, unique password and do not put it in this README, `.env.example`, source code, or GitHub.
+
+If the script cannot connect to Aura, confirm the `.env` values and that the backend machine can reach your Aura instance. If the script reports that the email is not allowed, check `ADMIN_EMAILS` for spelling and whitespace, then run the script again.
+
+**Do not** create an administrator by changing the frontend role or by using a special-looking email. Public signup is student-only; administrator role assignment must be handled by the backend's trusted provisioning process.
+
+### 6. Start the application
+
+Start the backend in the first terminal (with `.venv` activated):
+
+```bash
+python server.py
+```
+
+The API normally listens at:
+
+`http://127.0.0.1:8000`
+
+Start the frontend in the second terminal:
+
+```bash
 npm run dev
 ```
 
-Vite runs the existing frontend at `http://localhost:3000` and proxies `/api/*` requests to `http://127.0.0.1:8000`. To change the target, set `API_PROXY_TARGET` before starting Vite.
+Vite normally serves the frontend at:
 
-### 4. Verify the database connection
+`http://localhost:3000`
 
-Open `http://127.0.0.1:8000/api/health`. A healthy response includes `status: "ok"` and a `database.connected: true` value. A database failure returns HTTP 503.
+Open the URL printed by Vite if it chooses a different port. The local Vite development proxy forwards `/api/*` requests to `http://127.0.0.1:8000`. To use another backend address locally, set `API_PROXY_TARGET` before starting Vite.
 
-The initial schema includes unique constraints for users, student profiles, skills, jobs, and companies. The user persistence functions create a `(:User)-[:HAS_PROFILE]->(:Student)` relationship for student accounts. The remaining job, company, skill, recommendation, and graph APIs will be implemented in later phases.
+### 7. Verify the database connection
 
-### Current phase boundaries
+Open this endpoint in a browser:
 
-- Implemented: Neo4j driver, connection verification, schema constraints, user persistence adapter, database-aware health endpoint, and local Vite API proxy.
-- Next: remove frontend mock fallbacks, complete secure authentication/session handling, and connect student/admin workflows to persistent graph queries.
-- Google sign-in must not be treated as production-secure until server-side Google ID-token verification is added.
+`http://127.0.0.1:8000/api/health`
 
-### Authentication behavior (Phase 2)
+A healthy response should report `status: "ok"` and `database.connected: true`. If the API reports an error or HTTP 503, check the backend terminal and your Aura connection settings.
 
-- Signup and login require the Python API; the frontend no longer falls back to client-side account creation or accepts an email containing `admin` as proof of administrator access.
-- Only an access token is stored in browser localStorage. On reload, the frontend validates it through `GET /api/auth/me`; invalid/expired tokens are removed. Old demo user caches are ignored and cleared.
-- Public signup always creates a student account and a unique linked `Student` node. Passwords shorter than 8 characters are rejected.
-- Google sign-in is intentionally disabled until Google ID-token verification is configured server-side. A typed email is not proof of Google identity.
-- Student routes require a signed-in user in the frontend; admin routes require a user whose role is `admin`. These UI guards are not a substitute for server-side authorization on future protected data endpoints.
-- Provision admins explicitly: put the exact email in `ADMIN_EMAILS`, then run `python scripts/create_admin.py`. The script prompts for a password and refuses emails outside the allowlist. Never add admin creation to public signup.
+On startup, the backend verifies the Neo4j connection and initializes required constraints. The application stores persistent records in Neo4j rather than relying on a temporary in-memory user store.
 
-### Windows certificate bundle
+## How administrator access works
 
-`server.py` uses the `certifi` public CA bundle as `SSL_CERT_FILE` when the environment hasn't set a bundle explicitly. This keeps TLS certificate verification enabled for Neo4j Aura. If your environment sets `SSL_CERT_FILE` itself, that value is preserved.
+- `ADMIN_EMAILS` is an allowlist of administrator email addresses.
+- `python scripts/create_admin.py` provisions the admin account and prompts for its password.
+- Public signup creates student accounts only.
+- Signing in as a student does not grant access to admin endpoints.
+- Admin API requests require a valid bearer token and an account with the `admin` role in the database.
+- Changing the frontend UI or a browser-stored role is not a secure way to grant admin access.
 
+If you need to change which email is allowed to be an administrator, update `ADMIN_EMAILS` in the backend environment and restart/redeploy the backend as appropriate. Follow the project's trusted admin-provisioning process to create or update the account. Never share an administrator password.
 
-## Phase 3: Student profiles and skills
+## Neo4j graph model
 
-This phase connects the student profile form and skill management to Neo4j. The existing visual design is preserved.
+The core graph labels and relationships include:
 
-### New API routes
+```text
+(:User)-[:HAS_PROFILE]->(:Student)
+(:Student)-[:HAS_SKILL]->(:Skill)
+(:Job)-[:REQUIRES_SKILL]->(:Skill)
+(:Job)-[:POSTED_BY]->(:Company)
+```
 
-- `GET /api/skills` — returns the database-backed skill catalogue.
-- `GET /api/students/me` — returns the authenticated student's own profile and skill edges.
-- `PUT /api/students/me` — updates the authenticated student's profile and selected skill relationships.
-- `PUT /api/students/me/skills` — adds, updates proficiency, or removes the authenticated student's skills.
+The `HAS_SKILL` relationship can store details such as proficiency. Job-to-skill relationships can store requirement details such as importance and minimum proficiency, depending on the data recorded by the application.
 
-All `/api/students/me` routes require `Authorization: Bearer <token>`. The backend derives the student identity from the verified token; clients cannot choose another student's ID. Email is read-only on the profile because it is the account identity.
+### Inspect the graph in Neo4j Aura Query
 
-On backend startup, `data/skill_catalog.json` seeds the initial 21-skill catalogue with `MERGE` and `ON CREATE`, so existing skill metadata is not overwritten on every restart. Each student skill is stored as a `(Student)-[:HAS_SKILL {proficiency, verified, acquiredDate}]->(Skill)` relationship.
+Count nodes by label:
 
-### Scope note
+```cypher
+MATCH (n)
+RETURN labels(n) AS NodeType, count(n) AS Total
+ORDER BY NodeType;
+```
 
-The student profile and skill catalog now use Neo4j. Job/company listings, the wider recommendation engine, and parts of the admin dashboards still contain the existing demo graph service and are scheduled for later phases. Do not treat those areas as database-backed until their phase is implemented.
+Count relationships by type:
 
-## Phase 4 — Live job, company, skill and admin data
+```cypher
+MATCH (a)-[r]->(b)
+RETURN labels(a) AS From,
+       type(r) AS Relationship,
+       labels(b) AS To,
+       count(*) AS Total
+ORDER BY From, Relationship, To;
+```
 
-Job, company, and skill management now uses the Python API and Neo4j Aura rather than the frontend's in-memory arrays.
+Return connected nodes and relationships for inspection:
 
-- Public read endpoints: `GET /api/jobs`, `GET /api/jobs/{job_id}`, `GET /api/companies`, `GET /api/skills`.
-- Admin endpoints require a valid Bearer token for a user whose database role is `admin`: `/api/admin/jobs`, `/api/admin/companies`, `/api/admin/skills`, `/api/admin/students`, `/api/admin/stats`.
-- Job requirements are stored as `(:Job)-[:REQUIRES_SKILL]->(:Skill)` edges.
-- Company links are stored as `(:Job)-[:POSTED_BY]->(:Company)` edges.
-- Existing mock jobs/companies are not automatically copied into Aura. Add real companies and jobs from the admin UI after starting the backend.
-- Public signup remains student-only. Admins can edit/remove existing student profiles, but cannot create a student login on the student's behalf; students must sign up themselves to set a private password.
+```cypher
+MATCH (a)-[r]->(b)
+RETURN a, r, b
+LIMIT 200;
+```
 
-The skill-based recommendation engine and graph explorer still require a separate integration phase to make all matching and visualization queries use Neo4j relationships end-to-end.
+### View the graph in Neo4j Bloom
+
+Bloom scenes are separate from the database itself. If a node exists in Aura but is not visible in Bloom:
+
+1. Open Bloom and create or clear a scene.
+2. Search for a node label such as `Job` or `Student`.
+3. Add matching nodes to the scene.
+4. Expand the relevant relationships (`POSTED_BY`, `REQUIRES_SKILL`, or `HAS_SKILL`) to bring connected nodes into view.
+5. Search for isolated nodes separately if you want to display every node, including nodes without relationships.
+
+Do not create duplicate records just because they are not currently visible in Bloom.
+
+## Environment variable reference
+
+| Variable | Purpose |
+|---|---|
+| `PORT` | Backend port. The deployment platform may provide this automatically. |
+| `HOST` | Host interface to bind the API to. Local development commonly uses `127.0.0.1`; hosted services should bind to `0.0.0.0`. |
+| `ENVIRONMENT` | Environment name, such as `development` or `production`. |
+| `NEO4J_URI` | Aura connection URI. |
+| `NEO4J_USERNAME` | Aura database username. |
+| `NEO4J_PASSWORD` | Aura database password. |
+| `NEO4J_DATABASE` | Database name in Aura. |
+| `SECRET_KEY` | Secret used to sign application JWTs. Keep it private and stable across instances. |
+| `JWT_ALGORITHM` | JWT signing algorithm; the example uses `HS256`. |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | Access-token lifetime in minutes. |
+| `ADMIN_EMAILS` | Comma-separated allowlist of admin emails. |
+| `CORS_ORIGINS` | Comma-separated browser origins allowed to call the API. Include the exact deployed frontend origin when hosting. |
+
+`.env.example` should contain placeholders only. Do not put real secrets into it.
+
+## Deployment notes
+
+### Frontend on Vercel
+
+- Deploy the frontend repository to Vercel.
+- If the project uses a `vercel.json` rewrite to forward `/api/*` to the backend, keep that file in the frontend project root and make sure the destination points to the current backend host.
+- After changing Vercel configuration, redeploy and test the login request in the browser Network panel.
+
+### Backend on Render
+
+Configure the backend environment variables in Render's service settings. Set the host to `0.0.0.0` (or ensure the server binds to the platform's required interface) and use the platform-provided port when supported by the server configuration.
+
+For `CORS_ORIGINS`, include the exact frontend origin, for example:
+
+```dotenv
+CORS_ORIGINS=https://your-frontend-name.vercel.app
+```
+
+Do not include a trailing slash in the origin. After changing backend environment variables, redeploy or restart the service.
+
+Never commit production `.env` files or paste secrets into logs, issues, or chat.
+
+## Troubleshooting
+
+### The backend cannot connect to Neo4j Aura
+
+- Confirm the URI, username, password, and database name.
+- Confirm the Aura instance is running.
+- Check the backend startup logs.
+- Do not disable TLS certificate verification to work around a certificate error. Use a valid CA bundle; the backend may use `certifi` for this.
+
+### Login or API requests return 404 on Vercel
+
+- Check that the deployed frontend has the intended Vercel rewrite configuration for `/api/*`.
+- Confirm the rewrite destination points to the Render backend.
+- Redeploy after changing `vercel.json`.
+- Inspect the request URL and response in the browser Network panel. A Vercel `NOT_FOUND` response often means the request was not forwarded to the backend.
+
+### Browser reports a CORS error
+
+- Add the exact deployed frontend origin to backend `CORS_ORIGINS`.
+- Restart or redeploy the backend after changing the setting.
+- CORS errors are different from a route returning `404`.
+
+### Admin login fails
+
+- Confirm the email is included exactly in `ADMIN_EMAILS`.
+- Run `python scripts/create_admin.py` and follow its prompts.
+- Check that the backend is connected to the same Aura database used by the deployed app.
+- Do not use public student signup to try to create an admin account.
+
+### A node is missing from Bloom
+
+- Check node counts in Aura Query first.
+- If the node exists, search for it and add it to the Bloom scene.
+- Expand relationships to display connected nodes.
+- Check for isolated nodes separately.
+
+### Google sign-in is unavailable
+
+Google sign-in must not be enabled just by adding a Google button or setting an OAuth client ID. The backend must verify the Google ID token and map the verified identity to an application account. Until that is implemented and configured, use the supported email/password authentication.
+
+---
+
+## Security checklist
+
+- [ ] `.env` is not committed to Git.
+- [ ] Aura credentials are private and have not been pasted into source code.
+- [ ] `SECRET_KEY` is a long, random secret.
+- [ ] `ADMIN_EMAILS` contains only intended administrators.
+- [ ] The admin account was created with `python scripts/create_admin.py`.
+- [ ] Production `CORS_ORIGINS` contains the exact frontend origin.
+- [ ] Google sign-in is not exposed as secure until server-side token verification is implemented.
